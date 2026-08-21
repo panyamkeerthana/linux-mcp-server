@@ -1,0 +1,42 @@
+# Scenario: restart chronyd on a remote host
+# Based on a real Goose session captured from llm_request.3.jsonl
+name: restart-chronyd
+description: Restart the chronyd service on a remote host
+
+steps:
+  # Step 0: Model decides to validate a restart script
+  - type: tool_call
+    tool_name: linuxmcpserverarbitrary__validate_script
+    call_id: call_mock_validate
+    arguments:
+      description: "Restart the chronyd (chrony) time synchronization service"
+      script_type: bash
+      script: |
+        systemctl restart chronyd
+        systemctl --no-pager --full status chronyd | sed -n '1,25p'
+      host: "192.168.64.115"
+      readonly: false
+
+  # Step 1: Script validated, model runs it with confirmation
+  - type: tool_call
+    tool_name: linuxmcpserverarbitrary__run_script_interactive
+    call_id: call_mock_run
+    arguments:
+      description: "Restart the chronyd (chrony) time synchronization service"
+      script_type: bash
+      script: |
+        systemctl restart chronyd
+        systemctl --no-pager --full status chronyd | sed -n '1,25p'
+      host: "192.168.64.115"
+      readonly: false
+      token: "MOCK_TOKEN"
+
+  # Step 2: Script executed, model responds with final text
+  - type: text
+    content: |
+      chronyd restarted on 192.168.64.115
+      chronyd.service is now active (running):
+
+      Active: active (running) since Tue 2026-08-04 18:19:27 UTC
+      Main PID: 6015 (/usr/sbin/chronyd -F 2)
+      Startup completed successfully (status=0/SUCCESS).
